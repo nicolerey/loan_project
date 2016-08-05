@@ -1,0 +1,95 @@
+<div class="x_panel">
+	<div class="row x_title">
+		<div class="col-md-4 col-sm-4">
+			<h3>Banks <small>List of banks</small></h3>
+		</div>
+		<div class="col-md-2 col-sm-2 pull-right" style="padding-top: 10px;">
+			<button type="button" class="btn btn-default btn-primary" ng-click="OpenNewBankModal()"><i class="fa fa-user-plus"></i> Add bank</button>
+		</div>
+		<div class="col-md-3 col-sm-3 pull-right" style="padding-top: 10px;">
+			<input type="text" placeholder="Search bank" class="form-control" ng-model="search_field"/>
+		</div>
+		<i class="fa fa-search fa-2x pull-right" style="padding-top: 14px;"></i>
+	</div>  
+
+	<div class="alert alert-danger" ng-show="error_flag">
+		<ul class="list-unstyled">
+			<li ng-repeat="error_msg in errors">{{error_msg}}</li>
+		</ul>
+	</div>
+
+	<!--- modal -->
+	<script type="text/ng-template" id="NewBankModalContent.html">
+        <div class="modal-header">
+            <h3 class="modal-title">Add new bank</h3>
+        </div>
+        <div class="modal-body form-horizontal">        
+        	<div class="alert alert-danger" ng-show="error_flag">
+        		<ul class="list-unstyled">
+        			<li ng-repeat="error_msg in errors">{{error_msg}}</li>
+        		</ul>
+        	</div>
+        	<div class="form-group">        		
+        		<label class="col-sm-2 control-label"> Bank name</label>
+        		<div class="col-sm-3">
+        			<input type="text" class="form-control" ng-model="new_bank_name"/>
+        		</div>
+        	</div>
+        	<div class="form-group">
+        		<label class="col-sm-2 control-label"> Balance</label>
+        		<div class="col-sm-3">
+        			<input min="0" step="0.01" value="0.00" class="form-control" ng-model="new_bank_balance" p-format value="0.00"/>
+        		</div>
+        	</div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-primary" type="button" ng-click="ok()" style="margin-bottom: 0px;">OK</button>
+            <button class="btn btn-warning" type="button" ng-click="cancel()">Cancel</button>
+        </div>
+    </script>
+    <!--- modal -->
+
+	<div class="row">
+		<div class="col-md-12 col-sm-12">
+			<table class="table table-striped">
+				<thead>
+					<tr>
+						<th class="col-sm-2">Bank Name</th>
+                        <th class="col-sm-2">Balance</th>
+                        <th class="col-sm-2"># of transactions</th>
+                        <th class="col-sm-3">Total transaction amount</th>
+                        <th class="col-sm-2">Total bank balance</th>
+						<th class="col-sm-1"></th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr ng-show="banks_flag"><td class="text-center" colspan="4">Nothing to display.</td></tr>
+                    <tr ng-repeat="bank in banks | filter:search_field">
+                        <td>
+                            <a href="#" editable-text="banks[$index].banks_name" onbeforesave="UpdateBank('banks_name', $data, bank.banks_id, $index)">
+                                {{bank.banks_name || '-'}}
+                            </a>
+                        </td>
+                        <td>
+                            <a href="#" editable-text="banks[$index].banks_balance" onbeforesave="UpdateBank('banks_balance', $data, bank.banks_id, $index)">
+                                {{bank.banks_balance | number:2}}
+                            </a>
+                        </td>
+                        <td>
+                            {{bank.num_of_transactions}}
+                        </td>
+                        <td>
+                            {{bank.total_transaction_amount | number:2}}
+                        </td>
+                        <td>
+                            {{bank.total_bank_balance | number:2}}
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-danger btn-xs" ng-click="DeleteBank($index)"><span class="fa fa-remove"></span> Delete bank</button>
+                        </td>
+                    </tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>

@@ -1,0 +1,143 @@
+<div class="x_panel">
+	<div class="row x_title">
+		<div class="col-md-4 col-sm-4">
+			<h3>Loans <small>List of loan transactions</small></h3>
+		</div>
+		<div class="col-md-2 col-sm-2 pull-right" style="padding-top: 10px;">
+			<button type="button" class="btn btn-default btn-primary" ng-click="OpenNewLoanTransactionModal('lg')"><i class="fa fa-user-plus"></i> Add transaction</button>
+		</div>
+		<div class="col-md-3 col-sm-3 pull-right" style="padding-top: 10px;">
+			<input type="text" placeholder="Search loan title/customer name" class="form-control" ng-model="search_field" ng-change="ComputeFilteredData(loan_transactions, search_field)"/>
+		</div>
+		<i class="fa fa-search fa-2x pull-right" style="padding-top: 14px;"></i>
+	</div>  
+
+	<div class="alert alert-danger" ng-show="error_flag">
+		<ul class="list-unstyled">
+			<li ng-repeat="error_msg in errors">{{error_msg}}</li>
+		</ul>
+	</div>
+
+	<!--- modal -->
+	<script type="text/ng-template" id="NewLoanTransactionModalContent.html">
+        <div class="modal-header">
+            <h3 class="modal-title">Add new loan transaction</h3>
+        </div>
+        <div class="modal-body form-horizontal">        
+        	<div class="alert alert-danger" ng-show="error_flag">
+        		<ul class="list-unstyled">
+        			<li ng-repeat="error_msg in errors">{{error_msg}}</li>
+        		</ul>
+        	</div>
+        	<div class="form-group">        		
+        		<label class="col-sm-2 control-label"> Payment date</label>
+        		<div class="col-sm-3">
+        			<input type="text" class="form-control" date-picker ng-model="new_payment_date"/>
+        			<span class="help-block">YYYY-mm-dd (2016-12-22)</span>
+        		</div>
+        	</div>
+        	<div class="form-group">
+        		<label class="col-sm-2 control-label"> Loan</label>
+        		<div class="col-sm-3">
+                    <select class="form-control" ng-model="new_payment_loan" data-ng-options="loan.loan_name for loan in loans" ng-change="ChangedLoan(new_payment_loan)"></select>
+        		</div>
+        	</div>
+        	<div class="form-group">
+        		<label class="col-sm-2 control-label"> Customer</label>
+        		<div class="col-sm-3">
+        			<select class="form-control" ng-model="new_payment_customer" data-ng-options="customer.customers_name for customer in customers" ng-change="ChangedCustomer(new_payment_customer)"></select>
+        		</div>
+        	</div>
+        	<div class="form-group">
+        		<label class="col-sm-2 control-label"> Loan amount</label>
+        		<div class="col-sm-2">
+        			<input min="0" step="0.01" value="0.00" class="form-control" ng-model="new_payment_amount" p-format value="0.00"/>
+        		</div>
+        	</div>
+            <div class="form-group">                
+                <label class="col-sm-2 control-label"> Remarks</label>              
+                <div class="col-sm-5">
+                    <textarea class="form-control" rows="3" ng-model="new_payment_remarks"></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-primary" type="button" ng-click="ok()" style="margin-bottom: 0px;">OK</button>
+            <button class="btn btn-warning" type="button" ng-click="cancel()">Cancel</button>
+        </div>
+    </script>
+    <!--- modal -->
+
+    <div class="row form-horizontal">
+        <label class="col-sm-1 control-label">Start date</label>
+        <div class="col-sm-2">
+            <input type="text" class="form-control" date-picker ng-model="start_date"/>
+        </div>
+        <label class="col-sm-1 control-label">End date</label>
+        <div class="col-sm-2">
+            <input type="text" class="form-control" date-picker ng-model="end_date"/>
+        </div>
+        <div class="col-sm-1">
+            <button class="btn btn-default" type="button" ng-click="SearchWithDate()"><i class="fa fa-search"></i> Search</button>
+        </div>
+    </div>
+
+	<div class="row">
+		<div class="col-md-12 col-sm-12">
+			<table class="table table-striped">
+				<thead>
+					<tr>
+						<th class="col-sm-1">#</th>
+						<th class="col-sm-1">Date</th>
+                        <th class="col-sm-2">Loan title</th>
+						<th class="col-sm-2">Customer name</th>
+						<th class="col-sm-2">Payed amount</th>
+						<th class="col-sm-2">Remarks</th>
+						<th class="col-sm-1"></th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr ng-show="loan_transactions_flag"><td class="text-center" colspan="7">Nothing to display.</td></tr>
+                    <tr ng-repeat="payment in loan_transactions | filter:search_field">
+                        <td>{{$index+1}}</td>
+                        <td>
+                            <a href="#" editable-bsdate="loan_transactions[$index].loan_payments_date" e-is-open="opened.$data" e-ng-click="open($event, '$data')" e-datepicker-popup="yyyy-MM-dd" onbeforesave="UpdateLoanTransaction('loan_payments_date', $data, payment.loan_payments_id, $index)">
+                                {{payment.loan_payments_date | date:'yyyy-MM-dd'}}
+                            </a>
+                        </td>
+                        <td>
+                            <a href="#" editable-select="loan_transactions[$index].loans_id" onbeforesave="UpdateLoanTransaction('loans_id', $data, payment.loan_payments_id, $index)" e-ng-options="loan.loan_name for loan in loans">
+                                {{payment.loan_name || '-'}}
+                            </a>
+                        </td>
+                        <td>
+                            <a href="#" editable-select="loan_transactions[$index].customers_id" onbeforesave="UpdateLoanTransaction('customers_id', $data, payment.loan_payments_id, $index)" e-ng-options="customer.customers_name for customer in customers">
+                                {{payment.customer_name || '-'}}
+                            </a>
+                        </td>
+                        <td>
+                            <a href="#" editable-text="loan_transactions[$index].loan_payments_amount" onbeforesave="UpdateLoanTransaction('loan_payments_amount', $data, payment.loan_payments_id, $index)">
+                                {{payment.loan_payments_amount}}
+                            </a>
+                        </td>
+                        <td>
+                            <a href="#" editable-textarea="loan_transactions[$index].loan_payments_remarks" e-rows="3" e-col="20" onbeforesave="UpdateLoanTransaction('loan_payments_remarks', $data, payment.loan_payments_id, $index)">
+                                {{payment.loan_payments_remarks || '-'}}
+                            </a>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-danger btn-xs" ng-click="DeleteLoanTransaction($index)"><span class="fa fa-remove"></span> Delete transaction</button>
+                        </td>
+                    </tr>
+                    <tr class="form-horizontal">
+                        <td colspan="4">
+                            <label class="col-sm-12 control-label" style="padding-top: 0px;">Total:</label>
+                        </td>
+                        <td><strong>{{total_payed_amount | number:2}}</strong></td>
+                        <td colspan="2"></td>
+                    </tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>

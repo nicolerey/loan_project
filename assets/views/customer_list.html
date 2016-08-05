@@ -1,0 +1,147 @@
+<div class="x_panel">
+	<div class="row x_title">
+		<div class="col-md-4 col-sm-4">
+			<h3>Customers <small>List of customers</small></h3>
+		</div>
+		<div class="col-md-2 col-sm-2 pull-right" style="padding-top: 10px;">
+			<button type="button" class="btn btn-default btn-primary" ng-click="OpenNewCustomerModal('lg')"><i class="fa fa-user-plus"></i> Add customer</button>
+		</div>
+		<div class="col-md-3 col-sm-3 pull-right" style="padding-top: 10px;">
+			<input type="text" placeholder="Search customer name" class="form-control" ng-model="customer_to_search"/>
+		</div>
+		<i class="fa fa-search fa-2x pull-right" style="padding-top: 14px;"></i>
+	</div>  
+
+	<div class="alert alert-danger" ng-show="error_flag">
+		<ul class="list-unstyled">
+			<li ng-repeat="error_msg in errors">{{error_msg}}</li>
+		</ul>
+	</div>
+
+	<!--- modal -->
+	<script type="text/ng-template" id="NewCustomerModalContent.html">
+        <div class="modal-header">
+            <h3 class="modal-title">Add new customer</h3>
+        </div>
+        <div class="modal-body form-horizontal">        
+        	<div class="alert alert-danger" ng-show="error_flag">
+        		<ul class="list-unstyled">
+        			<li ng-repeat="error_msg in errors">{{error_msg}}</li>
+        		</ul>
+        	</div>
+        	<div class="form-group">
+        		<label class="col-sm-2 control-label"> Customer name</label>
+        		<div class="col-sm-3">
+        			<input type="text" ng-model="new_customer_lastname" class="form-control"/>
+        			<span class="help-block">Last name</span>
+        		</div>
+        		<div class="col-sm-3">
+        			<input type="text" ng-model="new_customer_firstname" class="form-control"/>
+        			<span class="help-block">First name</span>
+        		</div>
+        		<div class="col-sm-2">
+        			<input type="text" ng-model="new_customer_middleinitial" class="form-control"/>
+        			<span class="help-block">Middle initial</span>
+        		</div>
+        	</div>
+        	<div class="form-group">
+        		<label class="col-sm-2 control-label"> Customer nickname</label>
+        		<div class="col-sm-3">
+        			<input type="text" ng-model="new_customer_nickname" class="form-control"/>
+        		</div>
+        	</div>
+        	<div class="form-group">        		
+        		<label class="col-sm-2 control-label"> Gender</label>
+        		<div class="col-sm-2">
+        			<select class="form-control" ng-model="new_customer_gender" ng-change="changedGender(new_customer_gender)" data-ng-options="gender_value.name for gender_value in gender_values"></select>
+        		</div>
+        	</div>
+        	<div class="form-group">        		
+        		<label class="col-sm-2 control-label"> Birthdate</label>
+        		<div class="col-sm-3">
+        			<input type="text" class="form-control" date-picker ng-model="new_customer_birthdate"/>
+        			<span class="help-block">YYYY-mm-dd (2016-12-22)</span>
+        		</div>
+        	</div>
+        	<div class="form-group">
+        		<label class="col-sm-2 control-label"> Contact #</label>
+        		<div class="col-sm-2">
+        			<input type="text" ng-model="new_customer_contactnum" class="form-control"/>
+        		</div>
+        	</div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-primary" type="button" ng-click="ok()" style="margin-bottom: 0px;">OK</button>
+            <button class="btn btn-warning" type="button" ng-click="cancel()">Cancel</button>
+        </div>
+    </script>
+    <!--- modal -->
+
+	<div class="row">
+		<div class="col-md-12 col-sm-12">
+			<table class="table table-striped">
+				<thead>
+					<tr>
+						<th class="col-sm-2">Customer name</th>
+						<th class="col-sm-1">Nickname</th>
+						<th class="col-sm-1">Gender</th>
+						<th class="col-sm-1">Birthdate</th>
+						<th class="col-sm-1">Contact #</th>
+						<th class="col-sm-1"># of Loans</th>
+						<th class="col-sm-2">Total loan amount</th>
+						<th class="col-sm-2">Total payed amount</th>
+						<th class="col-sm-1"></th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr ng-show="customers_flag"><td class="text-center" colspan="7">Nothing to display.</td></tr>
+					<tr ng-repeat="customer in customers | filter:customer_to_search">
+						<td>
+							<a href="#" editable-text="customers[$index].customers_firstname" onbeforesave="UpdateCustomer('customers_firstname', $data, customer.customers_id, $index)">
+								{{customer.customers_firstname | capitalize}}
+							</a>
+							&nbsp;
+							<a href="#" editable-text="customers[$index].customers_middleinitial" onbeforesave="UpdateCustomer('customers_middleinitial', $data, customer.customers_id, $index)">
+								{{customer.customers_middleinitial | capitalize}}
+							</a><span ng-if="customer.customers_middleinitial">.</span>
+							&nbsp;
+							<a href="#" editable-text="customers[$index].customers_lastname" onbeforesave="UpdateCustomer('customers_lastname', $data, customer.customers_id, $index)">
+								{{customer.customers_lastname | capitalize}}
+							</a>
+						</td>
+						<td>
+							<a href="#" editable-text="customers[$index].customers_nickname" onbeforesave="UpdateCustomer('customers_nickname', $data, customer.customers_id, $index)">
+								{{customer.customers_nickname}}
+							</a>
+						</td>
+						<td>
+							<a href="#" editable-select="customers[$index].customers_gender" onbeforesave="UpdateCustomer('customers_gender', $data, customer.customers_id, $index)" e-ng-options="gender_value.name for gender_value in gender_values">
+								{{customer.customers_gender | convert_gender}}
+							</a>
+						</td>
+						<td>
+							<a href="#" editable-bsdate="customers[$index].customers_birthdate" e-is-open="opened.$data" e-ng-click="open($event, '$data')" e-datepicker-popup="yyyy-MM-dd" onbeforesave="UpdateCustomer('customers_birthdate', $data, customer.customers_id, $index)">
+								{{FormatDate(customer.customers_birthdate)}}
+							</a>
+						</td>
+						<td>
+							<a href="#" editable-text="customers[$index].customers_contact_number" onbeforesave="UpdateCustomer('customers_contact_number', $data, customer.customers_id, $index)">
+								{{customer.customers_contact_number || '-'}}
+							</a>
+						</td>
+						<td>
+							{{customer.num_of_loans}}
+						</td>
+						<td>
+							{{customer.total_loan_amount | number:2}}
+						</td>
+						<td>
+							{{customer.total_payed_amount | number:2}}
+						</td>
+						<td><button type="button" class="btn btn-danger btn-xs" ng-click="DeleteCustomer($index)"><span class="fa fa-remove"></span> Delete</button></td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>

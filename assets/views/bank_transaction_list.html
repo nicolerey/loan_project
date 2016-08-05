@@ -1,0 +1,143 @@
+<div class="x_panel">
+	<div class="row x_title">
+		<div class="col-md-4 col-sm-4">
+			<h3>Bank <small>List of bank transactions</small></h3>
+		</div>
+		<div class="col-md-2 col-sm-2 pull-right" style="padding-top: 10px;">
+			<button type="button" class="btn btn-default btn-primary" ng-click="OpenNewBankTransactionModal('lg')"><i class="fa fa-user-plus"></i> Add transaction</button>
+		</div>
+		<div class="col-md-3 col-sm-3 pull-right" style="padding-top: 10px;">
+			<input type="text" placeholder="Search bank" class="form-control" ng-model="search_field" ng-change="ComputeFilteredData(bank_transactions, search_field)"/>
+		</div>
+		<i class="fa fa-search fa-2x pull-right" style="padding-top: 14px;"></i>
+	</div>  
+
+	<div class="alert alert-danger" ng-show="error_flag">
+		<ul class="list-unstyled">
+			<li ng-repeat="error_msg in errors">{{error_msg}}</li>
+		</ul>
+	</div>
+
+	<!--- modal -->
+	<script type="text/ng-template" id="NewBankTransactionModalContent.html">
+        <div class="modal-header">
+            <h3 class="modal-title">Add new bank transaction</h3>
+        </div>
+        <div class="modal-body form-horizontal">        
+        	<div class="alert alert-danger" ng-show="error_flag">
+        		<ul class="list-unstyled">
+        			<li ng-repeat="error_msg in errors">{{error_msg}}</li>
+        		</ul>
+        	</div>
+        	<div class="form-group">        		
+        		<label class="col-sm-2 control-label"> Transaction date</label>
+        		<div class="col-sm-3">
+        			<input type="text" class="form-control" date-picker ng-model="new_bank_transaction_date"/>
+        			<span class="help-block">YYYY-mm-dd (2016-12-22)</span>
+        		</div>
+        	</div>
+        	<div class="form-group">
+        		<label class="col-sm-2 control-label"> Bank</label>
+        		<div class="col-sm-3">
+                    <select class="form-control" ng-model="new_transaction_bank" data-ng-options="bank.banks_name for bank in banks" ng-change="ChangedBank(new_transaction_bank)"></select>
+        		</div>
+        	</div>
+        	<div class="form-group">
+        		<label class="col-sm-2 control-label"> Transaction type</label>
+        		<div class="col-sm-3">
+        			<select class="form-control" ng-model="new_transaction_type" data-ng-options="transaction_type.name for transaction_type in bank_transaction_type" ng-change="ChangedTransactionType(new_transaction_type)"></select>
+        		</div>
+        	</div>
+        	<div class="form-group">
+        		<label class="col-sm-2 control-label"> Amount</label>
+        		<div class="col-sm-2">
+        			<input min="0" step="0.01" value="0.00" class="form-control" ng-model="new_bank_transaction_amount" p-format value="0.00"/>
+        		</div>
+        	</div>
+            <div class="form-group">                
+                <label class="col-sm-2 control-label"> Remarks</label>              
+                <div class="col-sm-5">
+                    <textarea class="form-control" rows="3" ng-model="new_bank_transaction_remarks"></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-primary" type="button" ng-click="ok()" style="margin-bottom: 0px;">OK</button>
+            <button class="btn btn-warning" type="button" ng-click="cancel()">Cancel</button>
+        </div>
+    </script>
+    <!--- modal -->
+
+    <div class="row form-horizontal">
+        <label class="col-sm-1 control-label">Start date</label>
+        <div class="col-sm-2">
+            <input type="text" class="form-control" date-picker ng-model="start_date"/>
+        </div>
+        <label class="col-sm-1 control-label">End date</label>
+        <div class="col-sm-2">
+            <input type="text" class="form-control" date-picker ng-model="end_date"/>
+        </div>
+        <div class="col-sm-1">
+            <button class="btn btn-default" type="button" ng-click="SearchWithDate()"><i class="fa fa-search"></i> Search</button>
+        </div>
+    </div>
+
+	<div class="row">
+		<div class="col-md-12 col-sm-12">
+			<table class="table table-striped">
+				<thead>
+					<tr>
+						<th class="col-sm-1">#</th>
+						<th class="col-sm-1">Date</th>
+                        <th class="col-sm-2">Bank Name</th>
+						<th class="col-sm-2">Transaction Type</th>
+						<th class="col-sm-2">Amount</th>
+						<th class="col-sm-2">Remarks</th>
+						<th class="col-sm-1"></th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr ng-show="bank_transactions_flag"><td class="text-center" colspan="7">Nothing to display.</td></tr>
+                    <tr ng-repeat="transaction in bank_transactions | filter:search_field">
+                        <td>{{$index+1}}</td>
+                        <td>
+                            <a href="#" editable-bsdate="bank_transactions[$index].bank_transactions_date" e-is-open="opened.$data" e-ng-click="open($event, '$data')" e-datepicker-popup="yyyy-MM-dd" onbeforesave="UpdateBankTransaction('bank_transactions_date', $data, transaction.bank_transactions_id, $index)">
+                                {{transaction.bank_transactions_date | date:'yyyy-MM-dd'}}
+                            </a>
+                        </td>
+                        <td>
+                            <a href="#" editable-select="bank_transactions[$index].banks_id" onbeforesave="UpdateBankTransaction('banks_id', $data, transaction.bank_transactions_id, $index)" e-ng-options="bank.banks_name for bank in banks">
+                                {{transaction.banks_name || '-'}}
+                            </a>
+                        </td>
+                        <td>
+                            <a href="#" editable-select="bank_transactions[$index].bank_transactions_type" onbeforesave="UpdateBankTransaction('bank_transactions_type', $data, transaction.bank_transactions_id, $index)" e-ng-options="transaction_type.name for transaction_type in bank_transaction_type">
+                                {{FormatTransactionType(transaction.bank_transactions_type) || '-'}}
+                            </a>
+                        </td>
+                        <td>
+                            <a href="#" editable-text="bank_transactions[$index].bank_transactions_amount" onbeforesave="UpdateBankTransaction('bank_transactions_amount', $data, transaction.bank_transactions_id, $index)">
+                                {{transaction.bank_transactions_amount | number:2}}
+                            </a>
+                        </td>
+                        <td>
+                            <a href="#" editable-textarea="bank_transactions[$index].bank_transactions_remarks" e-rows="3" e-col="20" onbeforesave="UpdateBankTransaction('bank_transactions_remarks', $data, transaction.bank_transactions_id, $index)">
+                                {{transaction.bank_transactions_remarks || '-'}}
+                            </a>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-danger btn-xs" ng-click="DeleteBankTransaction($index)"><span class="fa fa-remove"></span> Delete transaction</button>
+                        </td>
+                    </tr>
+                    <tr class="form-horizontal">
+                        <td colspan="4">
+                            <label class="col-sm-12 control-label" style="padding-top: 0px;">Total:</label>
+                        </td>
+                        <td><strong>{{total_transaction_amount | number:2}}</strong></td>
+                        <td colspan="2"></td>
+                    </tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
